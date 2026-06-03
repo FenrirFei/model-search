@@ -200,7 +200,7 @@ footer {
 <body>
 
 <div class="search-page" id="searchPage">
-  <div class="logo">ModelSearch</div>
+  <div class="logo">ModelSearch <span style="font-size:0.9rem;color:var(--text-dim);vertical-align:super;">v0.2</span></div>
   <div class="subtitle">自然語言搜尋 AI 模型 · 中英雙語 · 5,153 個模型 · 36 種 HF 分類</div>
 
   <div class="search-wrapper">
@@ -232,7 +232,20 @@ footer {
 
   <div style="flex:1"></div>
   <footer>
-    🤖 ModelSearch · 5,153 個模型 · 36 種 HF 任務分類 · 資料來自 HuggingFace · 中英雙語
+    <div style="max-width:720px;margin:0 auto 1.5rem;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.5rem;">
+      <div style="font-weight:700;color:var(--blue);margin-bottom:0.5rem;">📋 更新日誌</div>
+      <div style="font-size:0.8rem;color:var(--text-dim);line-height:1.6;">
+        <div><strong>v0.2</strong> <span style="color:var(--text-dim);">— 2026-06-03</span></div>
+        <div style="margin-left:1rem;">• 5,153 個模型（36 種 HF 任務分類）</div>
+        <div style="margin-left:1rem;">• 中英雙語搜尋關鍵字（HF pipeline tag → 中文對應）</div>
+        <div style="margin-left:1rem;">• 類別快速篩選（LLM / VLM / ASR / TTS / 繪圖 / 影片 / Embedding / 翻譯 / OCR）</div>
+        <div style="margin-left:1rem;">• 精簡 JSON 格式（1.5MB，gzip → ~300KB）</div>
+        <div style="margin-top:0.5rem;"><strong>v0.1</strong> <span style="color:var(--text-dim);">— 2026-06-03</span></div>
+        <div style="margin-left:1rem;">• MVP 上線：177 個模型，Fuse.js 搜尋引擎</div>
+      </div>
+    </div>
+    <p>🤖 ModelSearch · 5,153 個模型 · 36 種 HF 任務分類 · 資料來自 HuggingFace · 中英雙語</p>
+    <p style="margin-top:0.3rem;">📅 最後更新：<span id="lastUpdate">2026-06-03</span></p>
   </footer>
 </div>
 
