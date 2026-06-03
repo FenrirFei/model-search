@@ -1,0 +1,6 @@
+# ModelSearch .gitignore
+__pycache__/
+*.pyc
+.DS_Store
+*.log
+.cf_tunnel*

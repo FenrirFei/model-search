@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModelSearch — AI 模型搜尋引擎</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-card: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --blue: #58a6ff;
+  --purple: #bc8cff;
+  --green: #3fb950;
+  --orange: #d29922;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', 'Noto Sans TC', -apple-system, sans-serif;
+  min-height: 100vh;
+}
+/* Search page layout */
+.search-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12vh 1rem 2rem;
+  transition: padding 0.3s;
+}
+.search-page.has-results {
+  padding-top: 2rem;
+}
+.logo {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--blue), var(--purple), var(--green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.3rem;
+  transition: font-size 0.3s;
+}
+.has-results .logo { font-size: 1.5rem; }
+.subtitle {
+  color: var(--text-dim);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+.has-results .subtitle { display: none; }
+/* Search bar */
+.search-wrapper {
+  width: 100%;
+  max-width: 640px;
+  position: relative;
+  transition: max-width 0.3s;
+}
+.has-results .search-wrapper { max-width: 720px; }
+.search-box {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 0.6rem 1.2rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-box:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(88,166,255,0.15);
+}
+.search-box input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.1rem;
+  padding: 0.6rem 0;
+  outline: none;
+  font-family: inherit;
+}
+.search-box input::placeholder { color: var(--text-dim); }
+.search-box .icon {
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  margin-right: 0.6rem;
+}
+/* Quick filters */
+.quick-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1.2rem;
+}
+.filter-chip {
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all 0.2s;
+  user-select: none;
+}
+.filter-chip:hover, .filter-chip.on {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: rgba(88,166,255,0.1);
+}
+/* Results */
+.results-area {
+  width: 100%;
+  max-width: 720px;
+  margin: 2rem auto 0;
+  display: none;
+}
+.results-area.visible { display: block; }
+.result-count {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.result-card:hover { border-color: var(--blue); }
+.result-card .model-id {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: 0.3rem;
+  word-break: break-all;
+}
+.result-card .model-desc {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+.result-card .model-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 0.78rem;
+}
+.meta-tag {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+.tag-pipeline { background: rgba(139,148,158,0.15); color: var(--text-dim); }
+.tag-size { background: rgba(188,140,255,0.15); color: var(--purple); }
+.tag-dl { background: rgba(63,185,80,0.15); color: var(--green); }
+.tag-stars { background: rgba(210,153,34,0.15); color: var(--orange); }
+/* Highlight matches */
+.highlight { background: rgba(210,153,34,0.3); padding: 0 2px; border-radius: 2px; }
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-dim);
+}
+.empty-state .emoji { font-size: 3rem; margin-bottom: 1rem; }
+/* Suggestions */
+.suggestions {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  padding-left: 1rem;
+}
+.suggestions span {
+  color: var(--blue);
+  cursor: pointer;
+  text-decoration: underline;
+  margin: 0 0.3rem;
+}
+/* Footer */
+footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  margin-top: auto;
+}
+</style>
+</head>
+<body>
+
+<div class="search-page" id="searchPage">
+  <div class="logo">ModelSearch</div>
+  <div class="subtitle">自然語言搜尋 AI 模型 · 中英雙語 · 177 個模型</div>
+
+  <div class="search-wrapper">
+    <div class="search-box">
+      <span class="icon">🔍</span>
+      <input type="text" id="searchInput" 
+             placeholder="試試：日文 OCR、語音辨識、小模型、text to speech..."
+             autocomplete="off" autofocus>
+    </div>
+  </div>
+
+  <div class="quick-filters">
+    <span class="filter-chip" data-filter="文字生成">📝 文字生成</span>
+    <span class="filter-chip" data-filter="語音辨識">🎤 語音辨識</span>
+    <span class="filter-chip" data-filter="文字轉語音">🔊 文字轉語音</span>
+    <span class="filter-chip" data-filter="多模態">👁️ 多模態</span>
+    <span class="filter-chip" data-filter="圖片">🖼️ 圖片</span>
+    <span class="filter-chip" data-filter="小模型">📱 小模型</span>
+  </div>
+
+  <div class="results-area" id="resultsArea">
+    <div class="result-count" id="resultCount"></div>
+    <div id="resultsList"></div>
+  </div>
+
+  <div style="flex:1"></div>
+  <footer>
+    🤖 ModelSearch MVP · 資料來自 HuggingFace · 靜態搜尋（無後端）· 中英雙語
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+<script>
+// Load models
+let models = [];
+let fuse;
+let activeFilter = null;
+
+async function init() {
+  try {
+    const resp = await fetch('models.json');
+    models = await resp.json();
+    
+    // Augment searchable text for each model
+    models.forEach(m => {
+      // Build searchable text combining all fields
+      let searchText = [
+        m.id,
+        m.pipeline_zh || '',
+        m.pipeline_tag || '',
+        m.description || '',
+        m.author || '',
+        m.size_category || '',
+        (m.tags || []).join(' '),
+      ].join(' ');
+      
+      // Add Chinese-friendly aliases
+      const orgAliases = {
+        'google': '谷歌',
+        'meta': 'Meta 臉書',
+        'microsoft': '微軟',
+        'facebook': '臉書',
+        'openai': 'OpenAI',
+        'stabilityai': 'Stability AI',
+        'deepseek': 'DeepSeek 深度求索',
+        'qwen': 'Qwen 通義千問',
+        'baai': 'BAAI 智源',
+        'thudm': '清華',
+        'openbmb': 'OpenBMB 面壁智能',
+        '01-ai': '零一萬物',
+        'mistralai': 'Mistral',
+        'nvidia': 'NVIDIA 輝達',
+        'baichuan': '百川',
+        'internlm': '書生 InternLM',
+        'zhipu': '智譜',
+        'alibaba': '阿里',
+      };
+      for (const [key, alias] of Object.entries(orgAliases)) {
+        if (m.id.toLowerCase().includes(key)) {
+          searchText += ' ' + alias;
+        }
+      }
+      
+      // Add task-based Chinese keywords
+      const taskKeywords = {
+        'text-generation': '文字生成 LLM 聊天 對話 寫作',
+        'text-to-speech': '文字轉語音 TTS 語音合成 朗讀',
+        'automatic-speech-recognition': '語音辨識 ASR 語音轉文字 聽寫',
+        'image-text-to-text': '多模態 視覺問答 圖片理解 VLM 看圖',
+        'text-to-image': '文字生成圖片 繪圖 AI繪圖 圖片生成',
+        'sentence-similarity': '語句相似度 嵌入 embedding 語意',
+        'fill-mask': '填空 BERT',
+        'feature-extraction': '特徵提取 embedding 向量',
+        'text-classification': '文字分類 情感分析',
+        'image-classification': '圖片分類 影像辨識',
+        'text-to-video': '文字生成影片 AI影片',
+        'image-to-video': '圖片生成影片',
+        'any-to-any': '多模態 全能',
+      };
+      const pk = m.pipeline_tag;
+      if (pk && taskKeywords[pk]) {
+        searchText += ' ' + taskKeywords[pk];
+      }
+      
+      m._searchText = searchText;
+    });
+    
+    // Setup Fuse.js
+    fuse = new Fuse(models, {
+      keys: [
+        { name: '_searchText', weight: 1 },
+        { name: 'id', weight: 2 },
+        { name: 'pipeline_zh', weight: 1.5 },
+        { name: 'description', weight: 0.5 },
+      ],
+      threshold: 0.4,
+      distance: 100,
+      includeScore: true,
+      minMatchCharLength: 2,
+      useExtendedSearch: true,
+    });
+    
+    console.log(`Loaded ${models.length} models, Fuse.js ready`);
+  } catch(e) {
+    console.error('Init error:', e);
+  }
+}
+
+const searchInput = document.getElementById('searchInput');
+const resultsArea = document.getElementById('resultsArea');
+const resultsList = document.getElementById('resultsList');
+const resultCount = document.getElementById('resultCount');
+const searchPage = document.getElementById('searchPage');
+
+function formatDL(n) {
+  if (!n) return '?';
+  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  return n.toString();
+}
+
+function doSearch(query) {
+  if (!query || query.trim().length < 2) {
+    resultsArea.classList.remove('visible');
+    searchPage.classList.remove('has-results');
+    return;
+  }
+  
+  searchPage.classList.add('has-results');
+  resultsArea.classList.add('visible');
+  
+  let candidates = models;
+  if (activeFilter) {
+    candidates = models.filter(m => {
+      const text = (m.pipeline_zh + ' ' + m.pipeline_tag + ' ' + m.id + ' ' + m.size_category).toLowerCase();
+      return text.includes(activeFilter.toLowerCase());
+    });
+  }
+  
+  // Create temporary fuse for filtered set
+  let results;
+  if (candidates.length < models.length) {
+    const tmpFuse = new Fuse(candidates, {
+      keys: [{ name: '_searchText', weight: 1 }, { name: 'id', weight: 2 }],
+      threshold: 0.4,
+      distance: 100,
+      includeScore: true,
+      minMatchCharLength: 2,
+    });
+    results = tmpFuse.search(query);
+  } else {
+    results = fuse.search(query);
+  }
+  
+  resultCount.textContent = `找到 ${results.length} 個相關模型`;
+  
+  if (results.length === 0) {
+    resultsList.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">🔍</div>
+        <p>沒有找到符合「${query}」的模型</p>
+        <div class="suggestions">
+          試試看：<span onclick="quickSearch('OCR')">OCR</span>
+          <span onclick="quickSearch('TTS')">TTS</span>
+          <span onclick="quickSearch('embedding')">embedding</span>
+          <span onclick="quickSearch('小模型')">小模型</span>
+        </div>
+      </div>`;
+    return;
+  }
+  
+  resultsList.innerHTML = results.slice(0, 30).map(r => {
+    const m = r.item;
+    const tags = [];
+    if (m.pipeline_zh) tags.push(`<span class="meta-tag tag-pipeline">${m.pipeline_zh}</span>`);
+    if (m.size_category) tags.push(`<span class="meta-tag tag-size">${m.size_category}</span>`);
+    if (m.downloads) tags.push(`<span class="meta-tag tag-dl">⬇${formatDL(m.downloads)}</span>`);
+    if (m.likes) tags.push(`<span class="meta-tag tag-stars">❤️${m.likes}</span>`);
+    
+    const desc = m.description || m.pipeline_zh || '';
+    
+    return `
+      <div class="result-card" onclick="window.open('https://huggingface.co/${m.id}','_blank')">
+        <div class="model-id">${m.id}</div>
+        <div class="model-desc">${desc}</div>
+        <div class="model-meta">${tags.join('')}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function quickSearch(q) {
+  searchInput.value = q;
+  doSearch(q);
+  searchInput.focus();
+}
+
+// Input handler with debounce
+let debounceTimer;
+searchInput.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => doSearch(searchInput.value), 150);
+});
+
+// Filter chips
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const filter = chip.dataset.filter;
+    if (activeFilter === filter) {
+      activeFilter = null;
+      chip.classList.remove('on');
+    } else {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('on'));
+      activeFilter = filter;
+      chip.classList.add('on');
+    }
+    // Re-run search with new filter
+    if (searchInput.value.trim().length >= 1) {
+      doSearch(searchInput.value);
+    } else {
+      // Show filtered models even without query
+      doSearch(filter);
+    }
+  });
+});
+
+// Load and initialize
+init();
+
+// Auto-focus
+searchInput.focus();
+</script>
+
+</body>
+</html>
