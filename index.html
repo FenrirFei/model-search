@@ -201,7 +201,7 @@ footer {
 
 <div class="search-page" id="searchPage">
   <div class="logo">ModelSearch</div>
-  <div class="subtitle">自然語言搜尋 AI 模型 · 中英雙語 · 177 個模型</div>
+  <div class="subtitle">自然語言搜尋 AI 模型 · 中英雙語 · 5,153 個模型 · 36 種 HF 分類</div>
 
   <div class="search-wrapper">
     <div class="search-box">
@@ -213,11 +213,15 @@ footer {
   </div>
 
   <div class="quick-filters">
-    <span class="filter-chip" data-filter="文字生成">📝 文字生成</span>
-    <span class="filter-chip" data-filter="語音辨識">🎤 語音辨識</span>
-    <span class="filter-chip" data-filter="文字轉語音">🔊 文字轉語音</span>
-    <span class="filter-chip" data-filter="多模態">👁️ 多模態</span>
-    <span class="filter-chip" data-filter="圖片">🖼️ 圖片</span>
+    <span class="filter-chip" data-filter="文字生成">📝 LLM</span>
+    <span class="filter-chip" data-filter="多模態問答">👁️ VLM</span>
+    <span class="filter-chip" data-filter="語音辨識">🎤 ASR</span>
+    <span class="filter-chip" data-filter="文字轉語音">🔊 TTS</span>
+    <span class="filter-chip" data-filter="文字生成圖片">🎨 繪圖</span>
+    <span class="filter-chip" data-filter="文字生成影片">🎬 影片</span>
+    <span class="filter-chip" data-filter="嵌入">🔢 Embedding</span>
+    <span class="filter-chip" data-filter="翻譯">🌐 翻譯</span>
+    <span class="filter-chip" data-filter="OCR">📄 OCR</span>
     <span class="filter-chip" data-filter="小模型">📱 小模型</span>
   </div>
 
@@ -228,7 +232,7 @@ footer {
 
   <div style="flex:1"></div>
   <footer>
-    🤖 ModelSearch MVP · 資料來自 HuggingFace · 靜態搜尋（無後端）· 中英雙語
+    🤖 ModelSearch · 5,153 個模型 · 36 種 HF 任務分類 · 資料來自 HuggingFace · 中英雙語
   </footer>
 </div>
 
@@ -244,82 +248,22 @@ async function init() {
     const resp = await fetch('models.json');
     models = await resp.json();
     
-    // Augment searchable text for each model
+    // Build search text from lean fields + task aliases directly
     models.forEach(m => {
-      // Build searchable text combining all fields
-      let searchText = [
-        m.id,
-        m.pipeline_zh || '',
-        m.pipeline_tag || '',
-        m.description || '',
-        m.author || '',
-        m.size_category || '',
-        (m.tags || []).join(' '),
-      ].join(' ');
-      
-      // Add Chinese-friendly aliases
-      const orgAliases = {
-        'google': '谷歌',
-        'meta': 'Meta 臉書',
-        'microsoft': '微軟',
-        'facebook': '臉書',
-        'openai': 'OpenAI',
-        'stabilityai': 'Stability AI',
-        'deepseek': 'DeepSeek 深度求索',
-        'qwen': 'Qwen 通義千問',
-        'baai': 'BAAI 智源',
-        'thudm': '清華',
-        'openbmb': 'OpenBMB 面壁智能',
-        '01-ai': '零一萬物',
-        'mistralai': 'Mistral',
-        'nvidia': 'NVIDIA 輝達',
-        'baichuan': '百川',
-        'internlm': '書生 InternLM',
-        'zhipu': '智譜',
-        'alibaba': '阿里',
-      };
-      for (const [key, alias] of Object.entries(orgAliases)) {
-        if (m.id.toLowerCase().includes(key)) {
-          searchText += ' ' + alias;
-        }
-      }
-      
-      // Add task-based Chinese keywords
-      const taskKeywords = {
-        'text-generation': '文字生成 LLM 聊天 對話 寫作',
-        'text-to-speech': '文字轉語音 TTS 語音合成 朗讀',
-        'automatic-speech-recognition': '語音辨識 ASR 語音轉文字 聽寫',
-        'image-text-to-text': '多模態 視覺問答 圖片理解 VLM 看圖',
-        'text-to-image': '文字生成圖片 繪圖 AI繪圖 圖片生成',
-        'sentence-similarity': '語句相似度 嵌入 embedding 語意',
-        'fill-mask': '填空 BERT',
-        'feature-extraction': '特徵提取 embedding 向量',
-        'text-classification': '文字分類 情感分析',
-        'image-classification': '圖片分類 影像辨識',
-        'text-to-video': '文字生成影片 AI影片',
-        'image-to-video': '圖片生成影片',
-        'any-to-any': '多模態 全能',
-      };
-      const pk = m.pipeline_tag;
-      if (pk && taskKeywords[pk]) {
-        searchText += ' ' + taskKeywords[pk];
-      }
-      
-      m._searchText = searchText;
+      m._searchText = [m.id, m.pz, m.p, m.sz, (m.t||[]).join(' '), m.kw].join(' ');
     });
     
-    // Setup Fuse.js
+    // Setup Fuse.js with lean fields
     fuse = new Fuse(models, {
       keys: [
         { name: '_searchText', weight: 1 },
         { name: 'id', weight: 2 },
-        { name: 'pipeline_zh', weight: 1.5 },
-        { name: 'description', weight: 0.5 },
+        { name: 'pz', weight: 1.5 },
       ],
-      threshold: 0.4,
+      threshold: 0.35,
       distance: 100,
       includeScore: true,
-      minMatchCharLength: 2,
+      minMatchCharLength: 1,
       useExtendedSearch: true,
     });
     
@@ -356,7 +300,7 @@ function doSearch(query) {
   let candidates = models;
   if (activeFilter) {
     candidates = models.filter(m => {
-      const text = (m.pipeline_zh + ' ' + m.pipeline_tag + ' ' + m.id + ' ' + m.size_category).toLowerCase();
+      const text = (m.pz + ' ' + m.p + ' ' + m.id + ' ' + m.sz + ' ' + (m.t||[]).join(' ')).toLowerCase();
       return text.includes(activeFilter.toLowerCase());
     });
   }
@@ -396,12 +340,12 @@ function doSearch(query) {
   resultsList.innerHTML = results.slice(0, 30).map(r => {
     const m = r.item;
     const tags = [];
-    if (m.pipeline_zh) tags.push(`<span class="meta-tag tag-pipeline">${m.pipeline_zh}</span>`);
-    if (m.size_category) tags.push(`<span class="meta-tag tag-size">${m.size_category}</span>`);
-    if (m.downloads) tags.push(`<span class="meta-tag tag-dl">⬇${formatDL(m.downloads)}</span>`);
-    if (m.likes) tags.push(`<span class="meta-tag tag-stars">❤️${m.likes}</span>`);
+    if (m.pz) tags.push(`<span class="meta-tag tag-pipeline">${m.pz}</span>`);
+    if (m.sz) tags.push(`<span class="meta-tag tag-size">${m.sz}</span>`);
+    if (m.d) tags.push(`<span class="meta-tag tag-dl">⬇${formatDL(m.d)}</span>`);
+    if (m.l) tags.push(`<span class="meta-tag tag-stars">❤️${m.l}</span>`);
     
-    const desc = m.description || m.pipeline_zh || '';
+    const desc = (m.t||[]).slice(0,5).join(' · ') || m.pz || '';
     
     return `
       <div class="result-card" onclick="window.open('https://huggingface.co/${m.id}','_blank')">
