@@ -6,215 +6,227 @@
 <title>ModelSearch — AI 模型搜尋引擎</title>
 <style>
 :root {
-  --bg: #0d1117;
-  --bg-card: #161b22;
-  --border: #30363d;
-  --text: #e6edf3;
-  --text-dim: #8b949e;
-  --blue: #58a6ff;
-  --purple: #bc8cff;
-  --green: #3fb950;
-  --orange: #d29922;
+  --bg: #0d1117; --bg-card: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-dim: #8b949e; --blue: #58a6ff;
+  --purple: #bc8cff; --green: #3fb950; --orange: #d29922;
+  --red: #f85149; --yellow: #d29922;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', 'Noto Sans TC', -apple-system, sans-serif;
+  background: var(--bg); color: var(--text);
+  font-family: 'Inter','Noto Sans TC',-apple-system,sans-serif;
   min-height: 100vh;
 }
-/* Search page layout */
 .search-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12vh 1rem 2rem;
-  transition: padding 0.3s;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 10vh 1rem 2rem; transition: padding 0.3s;
 }
-.search-page.has-results {
-  padding-top: 2rem;
-}
+.search-page.has-results { padding-top: 1.5rem; }
 .logo {
-  font-size: 3rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--blue), var(--purple), var(--green));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.3rem;
-  transition: font-size 0.3s;
+  font-size: 2.8rem; font-weight: 800;
+  background: linear-gradient(135deg,var(--blue),var(--purple),var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 0.2rem; transition: font-size 0.3s;
 }
-.has-results .logo { font-size: 1.5rem; }
-.subtitle {
-  color: var(--text-dim);
-  margin-bottom: 2rem;
-  font-size: 0.95rem;
-}
+.has-results .logo { font-size: 1.4rem; }
+.subtitle { color: var(--text-dim); margin-bottom: 1.8rem; font-size: 0.92rem; }
 .has-results .subtitle { display: none; }
-/* Search bar */
-.search-wrapper {
-  width: 100%;
-  max-width: 640px;
-  position: relative;
-  transition: max-width 0.3s;
+.status-bar {
+  font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1.5rem;
+  display: flex; gap: 1.5rem; align-items: center;
 }
-.has-results .search-wrapper { max-width: 720px; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.status-dot.ok { background: var(--green); }
+.status-dot.warn { background: var(--orange); }
+.search-wrapper { width: 100%; max-width: 660px; position: relative; transition: max-width 0.3s; }
+.has-results .search-wrapper { max-width: 760px; }
 .search-box {
-  display: flex;
-  align-items: center;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 28px;
-  padding: 0.6rem 1.2rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  display: flex; align-items: center; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 28px;
+  padding: 0.5rem 1.2rem; transition: border-color 0.2s, box-shadow 0.2s;
 }
-.search-box:focus-within {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(88,166,255,0.15);
-}
+.search-box:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(88,166,255,0.15); }
 .search-box input {
-  flex: 1;
-  background: none;
-  border: none;
-  color: var(--text);
-  font-size: 1.1rem;
-  padding: 0.6rem 0;
-  outline: none;
-  font-family: inherit;
+  flex:1; background:none; border:none; color:var(--text); font-size:1.05rem;
+  padding: 0.55rem 0; outline:none; font-family:inherit;
 }
 .search-box input::placeholder { color: var(--text-dim); }
-.search-box .icon {
-  color: var(--text-dim);
-  font-size: 1.2rem;
-  margin-right: 0.6rem;
+.search-box .icon { color: var(--text-dim); font-size:1.1rem; margin-right:0.6rem; }
+.search-mode {
+  font-size: 0.7rem; padding: 2px 10px; border-radius: 10px;
+  background: rgba(88,166,255,0.12); color: var(--blue); margin-left: 0.5rem;
+  white-space: nowrap; cursor: pointer; user-select: none;
 }
+.search-mode.fuzzy { background: rgba(210,153,34,0.12); color: var(--orange); }
 /* Quick filters */
 .quick-filters {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 1.2rem;
+  display: flex; gap: 0.45rem; flex-wrap: wrap; justify-content: center;
+  margin-top: 1rem; max-width: 760px;
 }
 .filter-chip {
-  padding: 0.35rem 1rem;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-dim);
-  cursor: pointer;
-  font-size: 0.82rem;
-  transition: all 0.2s;
-  user-select: none;
+  padding: 0.3rem 0.85rem; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-dim); cursor: pointer;
+  font-size: 0.78rem; transition: all 0.2s; user-select: none;
 }
 .filter-chip:hover, .filter-chip.on {
-  border-color: var(--blue);
-  color: var(--blue);
-  background: rgba(88,166,255,0.1);
+  border-color: var(--blue); color: var(--blue); background: rgba(88,166,255,0.1);
 }
 /* Results */
-.results-area {
-  width: 100%;
-  max-width: 720px;
-  margin: 2rem auto 0;
-  display: none;
-}
+.results-area { width: 100%; max-width: 760px; margin: 1.5rem auto 0; display: none; }
 .results-area.visible { display: block; }
-.result-count {
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  margin-bottom: 1rem;
+.result-count { color: var(--text-dim); font-size: 0.82rem; margin-bottom: 0.8rem; }
+.result-count .hybrid-badge {
+  font-size: 0.68rem; padding: 1px 7px; border-radius: 8px;
+  background: rgba(188,140,255,0.15); color: var(--purple); margin-left: 0.5rem;
 }
 .result-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.2rem 1.5rem;
-  margin-bottom: 0.8rem;
-  cursor: pointer;
-  transition: border-color 0.2s;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1rem 1.3rem; margin-bottom: 0.7rem;
+  cursor: pointer; transition: border-color 0.2s;
 }
 .result-card:hover { border-color: var(--blue); }
+.result-card .model-header { display: flex; justify-content: space-between; align-items: flex-start; }
 .result-card .model-id {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--blue);
-  margin-bottom: 0.3rem;
-  word-break: break-all;
+  font-size: 1rem; font-weight: 700; color: var(--blue); word-break: break-all;
+}
+.result-card .model-id .score {
+  font-size: 0.68rem; color: var(--text-dim); font-weight: 400; margin-left: 0.5rem;
 }
 .result-card .model-desc {
-  font-size: 0.88rem;
-  color: var(--text-dim);
-  margin-bottom: 0.5rem;
-  line-height: 1.5;
+  font-size: 0.82rem; color: var(--text-dim); margin-bottom: 0.45rem;
+  line-height: 1.45; margin-top: 0.3rem;
 }
-.result-card .model-meta {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  align-items: center;
-  font-size: 0.78rem;
-}
+.result-card .model-meta { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; font-size: 0.74rem; }
 .meta-tag {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.72rem;
+  padding: 2px 7px; border-radius: 10px; font-weight: 600; font-size: 0.68rem;
+  white-space: nowrap;
 }
 .tag-pipeline { background: rgba(139,148,158,0.15); color: var(--text-dim); }
-.tag-size { background: rgba(188,140,255,0.15); color: var(--purple); }
+.tag-license { background: rgba(63,185,80,0.15); color: var(--green); }
+.tag-license.nc { background: rgba(210,153,34,0.15); color: var(--orange); }
+.tag-license.restricted { background: rgba(248,81,73,0.15); color: var(--red); }
+.tag-framework { background: rgba(188,140,255,0.15); color: var(--purple); }
+.tag-params { background: rgba(88,166,255,0.1); color: var(--blue); }
 .tag-dl { background: rgba(63,185,80,0.15); color: var(--green); }
-.tag-stars { background: rgba(210,153,34,0.15); color: var(--orange); }
-/* Highlight matches */
-.highlight { background: rgba(210,153,34,0.3); padding: 0 2px; border-radius: 2px; }
+.tag-likes { background: rgba(210,153,34,0.15); color: var(--orange); }
+.tag-safe { background: rgba(63,185,80,0.12); color: var(--green); font-size: 0.65rem; }
 /* Empty state */
-.empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: var(--text-dim);
-}
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-dim); }
 .empty-state .emoji { font-size: 3rem; margin-bottom: 1rem; }
-/* Suggestions */
-.suggestions {
-  margin-top: 0.5rem;
-  font-size: 0.82rem;
-  color: var(--text-dim);
-  padding-left: 1rem;
+/* Prompt copy section */
+.prompt-section {
+  width: 100%; max-width: 760px; margin: 2rem auto 0;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1rem 1.3rem;
 }
-.suggestions span {
-  color: var(--blue);
-  cursor: pointer;
-  text-decoration: underline;
-  margin: 0 0.3rem;
+.prompt-section .section-title {
+  font-weight: 700; color: var(--purple); margin-bottom: 0.8rem;
+  display: flex; align-items: center; gap: 0.5rem;
 }
+.prompt-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.prompt-tab {
+  padding: 0.25rem 0.8rem; border-radius: 15px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim); cursor: pointer;
+  font-size: 0.75rem; transition: all 0.2s;
+}
+.prompt-tab.on { border-color: var(--purple); color: var(--purple); background: rgba(188,140,255,0.1); }
+.prompt-box {
+  position: relative; background: #0d1117; border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.8rem 2.5rem 0.8rem 1rem;
+  font-size: 0.78rem; color: var(--text-dim); font-family: 'SF Mono','Fira Code',monospace;
+  line-height: 1.5; white-space: pre-wrap; word-break: break-all;
+  min-height: 3rem;
+}
+.prompt-box .copy-btn {
+  position: absolute; top: 0.6rem; right: 0.6rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-dim); border-radius: 6px; padding: 4px 8px;
+  cursor: pointer; font-size: 0.7rem; transition: all 0.2s;
+}
+.prompt-box .copy-btn:hover { border-color: var(--blue); color: var(--blue); }
+.prompt-box .copy-btn.copied { border-color: var(--green); color: var(--green); }
+/* Loading */
+.loading-overlay {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 2rem; text-align: center; z-index: 100;
+  display: none;
+}
+.loading-overlay.show { display: block; }
+.loading-spinner {
+  width: 36px; height: 36px; border: 3px solid var(--border);
+  border-top-color: var(--blue); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 0 auto 0.8rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 /* Footer */
 footer {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-  margin-top: auto;
+  text-align: center; padding: 2rem; color: var(--text-dim);
+  font-size: 0.72rem; margin-top: 2rem;
+}
+.changelog {
+  max-width: 760px; margin: 0 auto 1.5rem; text-align: left;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1rem 1.5rem; font-size: 0.78rem;
+  line-height: 1.6;
+}
+.changelog strong { color: var(--blue); }
+/* Agent prompt modal */
+.modal-overlay {
+  position: fixed; inset:0; background: rgba(0,0,0,0.6);
+  display: none; align-items: center; justify-content: center; z-index: 200;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.5rem; max-width: 560px; width: 90%;
+  max-height: 80vh; overflow-y: auto;
+}
+.modal h3 { color: var(--purple); margin-bottom: 0.8rem; }
+.modal pre {
+  background: #0d1117; border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; font-size: 0.75rem; color: var(--text-dim);
+  font-family: 'SF Mono','Fira Code',monospace; white-space: pre-wrap;
+  margin-bottom: 0.8rem; position: relative;
+}
+.modal .copy-inline {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-dim); border-radius: 4px; padding: 2px 6px;
+  cursor: pointer; font-size: 0.65rem;
+}
+.modal .close-btn {
+  display: block; margin: 0 auto; padding: 0.5rem 1.5rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; cursor: pointer;
 }
 </style>
 </head>
 <body>
 
 <div class="search-page" id="searchPage">
-  <div class="logo">ModelSearch <span style="font-size:0.9rem;color:var(--text-dim);vertical-align:super;">v0.2</span></div>
-  <div class="subtitle">自然語言搜尋 AI 模型 · 中英雙語 · 5,153 個模型 · 36 種 HF 分類</div>
+  <div class="logo">ModelSearch <span style="font-size:0.8rem;color:var(--text-dim);vertical-align:super;" id="versionTag">v0.3</span></div>
+  <div class="subtitle">AI 模型自然語言搜尋 · 語意搜尋 · 授權查詢 · 中文友善</div>
+  
+  <div class="status-bar" id="statusBar">
+    <span><span class="status-dot warn" id="statusDot"></span> <span id="statusText">載入模型中...</span></span>
+    <span id="modelCount"></span>
+    <span id="searchMode" style="display:none;">🔬 語意搜尋</span>
+  </div>
 
   <div class="search-wrapper">
     <div class="search-box">
       <span class="icon">🔍</span>
       <input type="text" id="searchInput" 
-             placeholder="試試：日文 OCR、語音辨識、小模型、text to speech..."
+             placeholder="試試：畫圖的AI、日文語音辨識、寫程式的模型、商用授權翻譯..."
              autocomplete="off" autofocus>
+      <span class="search-mode" id="modeToggle" title="切換搜尋模式">語意</span>
     </div>
   </div>
 
   <div class="quick-filters">
     <span class="filter-chip" data-filter="文字生成">📝 LLM</span>
-    <span class="filter-chip" data-filter="多模態問答">👁️ VLM</span>
+    <span class="filter-chip" data-filter="多模態">👁️ VLM</span>
     <span class="filter-chip" data-filter="語音辨識">🎤 ASR</span>
     <span class="filter-chip" data-filter="文字轉語音">🔊 TTS</span>
     <span class="filter-chip" data-filter="文字生成圖片">🎨 繪圖</span>
@@ -222,7 +234,7 @@ footer {
     <span class="filter-chip" data-filter="嵌入">🔢 Embedding</span>
     <span class="filter-chip" data-filter="翻譯">🌐 翻譯</span>
     <span class="filter-chip" data-filter="OCR">📄 OCR</span>
-    <span class="filter-chip" data-filter="小模型">📱 小模型</span>
+    <span class="filter-chip" data-filter="商用">💼 商用OK</span>
   </div>
 
   <div class="results-area" id="resultsArea">
@@ -230,121 +242,219 @@ footer {
     <div id="resultsList"></div>
   </div>
 
+  <!-- Agent prompt section -->
+  <div class="prompt-section" id="promptSection">
+    <div class="section-title">🤖 複製給 AI Agent 使用</div>
+    <div class="prompt-tabs">
+      <span class="prompt-tab on" data-prompt="search">🔍 搜尋模型</span>
+      <span class="prompt-tab" data-prompt="compare">⚖️ 比較模型</span>
+      <span class="prompt-tab" data-prompt="license">📜 查授權</span>
+    </div>
+    <div class="prompt-box" id="promptBox">
+      <span class="copy-btn" id="copyBtn" onclick="copyPrompt()">📋 複製</span>
+      <span id="promptText">使用 ModelSearch 搜尋適合文字生成的開源模型，列出前5名並說明授權條款、框架和參數量</span>
+    </div>
+  </div>
+
   <div style="flex:1"></div>
   <footer>
-    <div style="max-width:720px;margin:0 auto 1.5rem;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.5rem;">
-      <div style="font-weight:700;color:var(--blue);margin-bottom:0.5rem;">📋 更新日誌</div>
-      <div style="font-size:0.8rem;color:var(--text-dim);line-height:1.6;">
-        <div><strong>v0.2</strong> <span style="color:var(--text-dim);">— 2026-06-03</span></div>
-        <div style="margin-left:1rem;">• 5,153 個模型（36 種 HF 任務分類）</div>
-        <div style="margin-left:1rem;">• 中英雙語搜尋關鍵字（HF pipeline tag → 中文對應）</div>
-        <div style="margin-left:1rem;">• 類別快速篩選（LLM / VLM / ASR / TTS / 繪圖 / 影片 / Embedding / 翻譯 / OCR）</div>
-        <div style="margin-left:1rem;">• 精簡 JSON 格式（1.5MB，gzip → ~300KB）</div>
-        <div style="margin-top:0.5rem;"><strong>v0.1</strong> <span style="color:var(--text-dim);">— 2026-06-03</span></div>
-        <div style="margin-left:1rem;">• MVP 上線：177 個模型，Fuse.js 搜尋引擎</div>
-      </div>
+    <div class="changelog">
+      <div style="font-weight:700;color:var(--blue);margin-bottom:0.4rem;">📋 更新日誌</div>
+      <div><strong>v0.3</strong> <span style="color:var(--text-dim)">— 2026-06-03</span></div>
+      <div style="margin-left:1rem;">• 🔬 語意搜尋（transformers.js + all-MiniLM-L6-v2 embedding）</div>
+      <div style="margin-left:1rem;">• 📜 模型授權顯示（MIT / Apache / CC / OpenRAIL 等）</div>
+      <div style="margin-left:1rem;">• 🏗️ 框架標示（transformers / diffusers / llama.cpp）</div>
+      <div style="margin-left:1rem;">• 📊 參數量估算</div>
+      <div style="margin-left:1rem;">• 🤖 一鍵複製 prompt 給 LLM Agent 使用</div>
+      <div style="margin-left:1rem;">• 🔄 GitHub Actions 每日增量同步</div>
+      <div style="margin-top:0.4rem;"><strong>v0.2</strong> <span style="color:var(--text-dim)">— 2026-06-03</span></div>
+      <div style="margin-left:1rem;">• 5,153 個模型（36 種 HF 分類）· 中英雙語搜尋</div>
+      <div style="margin-top:0.15rem;"><strong>v0.1</strong> <span style="color:var(--text-dim)">— 2026-06-03</span></div>
+      <div style="margin-left:1rem;">• MVP 上線：177 個模型，Fuse.js 搜尋</div>
     </div>
-    <p>🤖 ModelSearch · 5,153 個模型 · 36 種 HF 任務分類 · 資料來自 HuggingFace · 中英雙語</p>
-    <p style="margin-top:0.3rem;">📅 最後更新：<span id="lastUpdate">2026-06-03</span></p>
+    <p>🤖 ModelSearch · <span id="footerCount"></span> · 資料來自 HuggingFace</p>
+    <p style="margin-top:0.2rem;">📅 最後更新：<span id="lastUpdate">2026-06-03</span></p>
   </footer>
 </div>
 
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadOverlay">
+  <div class="loading-spinner"></div>
+  <div style="color:var(--text-dim);font-size:0.85rem;">下載語意模型中... (23MB，首次需等待)</div>
+</div>
+
+<!-- Modal for agent prompts -->
+<div class="modal-overlay" id="promptModal">
+  <div class="modal">
+    <h3>🤖 Agent Prompt 已產生</h3>
+    <pre id="modalPrompt"></pre>
+    <button class="close-btn" onclick="document.getElementById('promptModal').classList.remove('show')">關閉</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
-<script>
-// Load models
-let models = [];
-let fuse;
+<script type="module">
+// ===== Transformers.js Semantic Search =====
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+
+let extractor = null;
+let modelData = null;   // { models: [], embeddings: [] }
+let fuse = null;
 let activeFilter = null;
+let useSemantic = true;
 
-async function init() {
-  try {
-    const resp = await fetch('models.json');
-    models = await resp.json();
-    
-    // Build search text from lean fields + task aliases directly
-    models.forEach(m => {
-      m._searchText = [m.id, m.pz, m.p, m.sz, (m.t||[]).join(' '), m.kw].join(' ');
-    });
-    
-    // Setup Fuse.js with lean fields
-    fuse = new Fuse(models, {
-      keys: [
-        { name: '_searchText', weight: 1 },
-        { name: 'id', weight: 2 },
-        { name: 'pz', weight: 1.5 },
-      ],
-      threshold: 0.35,
-      distance: 100,
-      includeScore: true,
-      minMatchCharLength: 1,
-      useExtendedSearch: true,
-    });
-    
-    console.log(`Loaded ${models.length} models, Fuse.js ready`);
-  } catch(e) {
-    console.error('Init error:', e);
-  }
-}
-
+// ===== DOM =====
 const searchInput = document.getElementById('searchInput');
 const resultsArea = document.getElementById('resultsArea');
 const resultsList = document.getElementById('resultsList');
 const resultCount = document.getElementById('resultCount');
 const searchPage = document.getElementById('searchPage');
+const statusText = document.getElementById('statusText');
+const statusDot = document.getElementById('statusDot');
+const modelCount = document.getElementById('modelCount');
+const searchMode = document.getElementById('searchMode');
+const modeToggle = document.getElementById('modeToggle');
+const loadOverlay = document.getElementById('loadOverlay');
+const versionTag = document.getElementById('versionTag');
+const lastUpdate = document.getElementById('lastUpdate');
+const footerCount = document.getElementById('footerCount');
 
+// ===== Format helpers =====
 function formatDL(n) {
   if (!n) return '?';
-  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
-  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-  if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+  if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0)+'K';
   return n.toString();
 }
 
-function doSearch(query) {
-  if (!query || query.trim().length < 2) {
+function licenseClass(lic) {
+  if (!lic) return '';
+  const l = lic.toLowerCase();
+  if (l.includes('nc') || l.includes('non-commercial') || l.includes('noncommercial')) return 'nc';
+  if (l.includes('llama') || l.includes('gemma') || l.includes('research')) return 'restricted';
+  return '';
+}
+
+function licenseLabel(lic) {
+  if (!lic || lic === '') return '';
+  const l = lic.toLowerCase();
+  if (l.includes('mit')) return 'MIT ✓';
+  if (l.includes('apache')) return 'Apache ✓';
+  if (l.includes('cc-by-nc')) return '⚠ CC-NC';
+  if (l.includes('cc-by')) return 'CC-BY ~';
+  if (l.includes('openrail')) return 'OpenRAIL ~';
+  if (l.includes('llama')) return 'Llama ⚠';
+  if (l.includes('gemma')) return 'Gemma ⚠';
+  return lic.length > 12 ? lic.slice(0,12)+'…' : lic;
+}
+
+// ===== Cosine similarity =====
+function dotProduct(a, b) {
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) sum += a[i] * b[i];
+  return sum;
+}
+
+// ===== Semantic search =====
+async function semanticSearch(query, candidates, topK = 30) {
+  if (!extractor || !modelData?.embeddings?.length) return [];
+  
+  const queryEmb = await extractor(query, { pooling: 'mean', normalize: true });
+  const qVec = Array.from(queryEmb.data);
+  
+  const indices = candidates || [...Array(modelData.models.length).keys()];
+  
+  const scored = [];
+  for (const idx of indices) {
+    const emb = modelData.embeddings[idx];
+    if (!emb) continue;
+    const sim = dotProduct(qVec, emb);
+    scored.push({ idx, score: sim });
+  }
+  
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, topK);
+}
+
+// ===== Fuse.js fuzzy search =====
+function fuzzySearch(query, modelList) {
+  if (!fuse) return [];
+  const tmpFuse = modelList
+    ? new Fuse(modelList, {
+        keys: [{ name: '_searchText', weight: 1 }, { name: 'id', weight: 2 }],
+        threshold: 0.45, distance: 100, includeScore: true, minMatchCharLength: 1,
+      })
+    : fuse;
+  return tmpFuse.search(query);
+}
+
+// ===== Main search =====
+let debounceTimer;
+async function doSearch(query) {
+  if (!query || query.trim().length < 1) {
     resultsArea.classList.remove('visible');
     searchPage.classList.remove('has-results');
     return;
   }
   
+  if (!modelData) return;
+  
   searchPage.classList.add('has-results');
   resultsArea.classList.add('visible');
   
-  let candidates = models;
+  // Build candidate indices based on filter
+  let candidateIndices = null;
+  let candidateModels = null;
+  
   if (activeFilter) {
-    candidates = models.filter(m => {
-      const text = (m.pz + ' ' + m.p + ' ' + m.id + ' ' + m.sz + ' ' + (m.t||[]).join(' ')).toLowerCase();
-      return text.includes(activeFilter.toLowerCase());
+    candidateIndices = [];
+    candidateModels = [];
+    modelData.models.forEach((m, i) => {
+      const text = (m.pz+' '+m.p+' '+m.id+' '+m.sz+' '+(m.t||[]).join(' ')+' '+m.kw+' '+m.lib+' '+m.lic+' '+m.pm).toLowerCase();
+      if (text.includes(activeFilter.toLowerCase())) {
+        candidateIndices.push(i);
+        candidateModels.push(m);
+      }
     });
   }
   
-  // Create temporary fuse for filtered set
-  let results;
-  if (candidates.length < models.length) {
-    const tmpFuse = new Fuse(candidates, {
-      keys: [{ name: '_searchText', weight: 1 }, { name: 'id', weight: 2 }],
-      threshold: 0.4,
-      distance: 100,
-      includeScore: true,
-      minMatchCharLength: 2,
-    });
-    results = tmpFuse.search(query);
+  let results = [];
+  
+  if (useSemantic && extractor) {
+    const semanticResults = await semanticSearch(query, candidateIndices);
+    
+    if (candidateModels) {
+      results = semanticResults.map(r => ({ item: modelData.models[r.idx], score: r.score, _type: 'semantic' }));
+    } else {
+      results = semanticResults.map(r => ({ item: modelData.models[r.idx], score: r.score, _type: 'semantic' }));
+    }
   } else {
-    results = fuse.search(query);
+    // Fuse.js fallback
+    const fuseResults = fuzzySearch(query, candidateModels);
+    results = fuseResults.map(r => ({ item: r.item, score: 1 - r.score, _type: 'fuzzy' }));
   }
   
-  resultCount.textContent = `找到 ${results.length} 個相關模型`;
+  renderResults(results, query);
+}
+
+function renderResults(results, query) {
+  const hybrid = useSemantic && extractor;
+  resultCount.innerHTML = `找到 ${results.length} 個相關模型${hybrid ? '<span class="hybrid-badge">🔬 語意搜尋</span>' : '<span class="hybrid-badge">🔤 模糊搜尋</span>'}`;
   
   if (results.length === 0) {
     resultsList.innerHTML = `
       <div class="empty-state">
         <div class="emoji">🔍</div>
         <p>沒有找到符合「${query}」的模型</p>
-        <div class="suggestions">
-          試試看：<span onclick="quickSearch('OCR')">OCR</span>
-          <span onclick="quickSearch('TTS')">TTS</span>
-          <span onclick="quickSearch('embedding')">embedding</span>
-          <span onclick="quickSearch('小模型')">小模型</span>
+        <div style="margin-top:0.8rem;font-size:0.82rem;color:var(--text-dim);">
+          試試看：<span style="color:var(--blue);cursor:pointer;text-decoration:underline;" onclick="quickSearch('畫圖的AI')">畫圖的AI</span>
+          <span style="color:var(--blue);cursor:pointer;text-decoration:underline;margin-left:0.5rem;" onclick="quickSearch('語音轉文字')">語音轉文字</span>
+          <span style="color:var(--blue);cursor:pointer;text-decoration:underline;margin-left:0.5rem;" onclick="quickSearch('商用翻譯模型')">商用翻譯模型</span>
+          <span style="color:var(--blue);cursor:pointer;text-decoration:underline;margin-left:0.5rem;" onclick="quickSearch('TTS')">TTS</span>
         </div>
       </div>`;
     return;
@@ -353,16 +463,39 @@ function doSearch(query) {
   resultsList.innerHTML = results.slice(0, 30).map(r => {
     const m = r.item;
     const tags = [];
-    if (m.pz) tags.push(`<span class="meta-tag tag-pipeline">${m.pz}</span>`);
-    if (m.sz) tags.push(`<span class="meta-tag tag-size">${m.sz}</span>`);
-    if (m.d) tags.push(`<span class="meta-tag tag-dl">⬇${formatDL(m.d)}</span>`);
-    if (m.l) tags.push(`<span class="meta-tag tag-stars">❤️${m.l}</span>`);
     
-    const desc = (m.t||[]).slice(0,5).join(' · ') || m.pz || '';
+    // Pipeline tag
+    if (m.pz) tags.push(`<span class="meta-tag tag-pipeline">${m.pz}</span>`);
+    
+    // License
+    if (m.lic) {
+      const lc = licenseClass(m.lic);
+      tags.push(`<span class="meta-tag tag-license ${lc}">📜 ${licenseLabel(m.lic)}</span>`);
+    }
+    
+    // Framework
+    if (m.lib) tags.push(`<span class="meta-tag tag-framework">🏗️ ${m.lib}</span>`);
+    
+    // Params
+    if (m.pm) tags.push(`<span class="meta-tag tag-params">📊 ${m.pm}</span>`);
+    
+    // Safetensors
+    if (m.sf) tags.push(`<span class="meta-tag tag-safe">🛡️ safe</span>`);
+    
+    // Downloads
+    if (m.d) tags.push(`<span class="meta-tag tag-dl">⬇${formatDL(m.d)}</span>`);
+    
+    // Likes
+    if (m.l) tags.push(`<span class="meta-tag tag-likes">❤️${m.l}</span>`);
+    
+    const scoreStr = r.score ? ` <span class="score">${(r.score*100).toFixed(0)}%</span>` : '';
+    const desc = m.desc || (m.t||[]).slice(0,5).join(' · ') || m.pz || '';
     
     return `
       <div class="result-card" onclick="window.open('https://huggingface.co/${m.id}','_blank')">
-        <div class="model-id">${m.id}</div>
+        <div class="model-header">
+          <div class="model-id">${m.id}${scoreStr}</div>
+        </div>
         <div class="model-desc">${desc}</div>
         <div class="model-meta">${tags.join('')}</div>
       </div>
@@ -370,20 +503,24 @@ function doSearch(query) {
   }).join('');
 }
 
-function quickSearch(q) {
+// ===== Quick search =====
+window.quickSearch = function(q) {
   searchInput.value = q;
   doSearch(q);
   searchInput.focus();
-}
+};
 
-// Input handler with debounce
-let debounceTimer;
-searchInput.addEventListener('input', () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => doSearch(searchInput.value), 150);
+// ===== Toggle search mode =====
+modeToggle.addEventListener('click', () => {
+  if (!extractor) { loadOverlay.classList.add('show'); initSemantic(); return; }
+  useSemantic = !useSemantic;
+  modeToggle.textContent = useSemantic ? '語意' : '模糊';
+  modeToggle.classList.toggle('fuzzy', !useSemantic);
+  searchMode.textContent = useSemantic ? '🔬 語意搜尋' : '🔤 模糊搜尋';
+  if (searchInput.value.trim().length >= 1) doSearch(searchInput.value);
 });
 
-// Filter chips
+// ===== Filter chips =====
 document.querySelectorAll('.filter-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     const filter = chip.dataset.filter;
@@ -395,21 +532,137 @@ document.querySelectorAll('.filter-chip').forEach(chip => {
       activeFilter = filter;
       chip.classList.add('on');
     }
-    // Re-run search with new filter
     if (searchInput.value.trim().length >= 1) {
       doSearch(searchInput.value);
-    } else {
-      // Show filtered models even without query
-      doSearch(filter);
+    } else if (activeFilter) {
+      doSearch(activeFilter);
     }
   });
 });
 
-// Load and initialize
-init();
+// ===== Input handler =====
+searchInput.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => doSearch(searchInput.value), 200);
+});
 
-// Auto-focus
-searchInput.focus();
+// ===== Prompt copy =====
+const prompts = {
+  search: '使用 ModelSearch 搜尋適合{任務}的開源模型，列出前5名並說明授權條款、框架和參數量',
+  compare: '在 ModelSearch 上比較 {model_a} 和 {model_b}，分析它們的授權、參數量、框架差異，以及各自的優劣勢',
+  license: '在 ModelSearch 上找出 5 個適合商用（MIT 或 Apache 授權）的 {任務} 模型，排除 CC-BY-NC 和 Llama 授權',
+};
+
+let currentPrompt = 'search';
+document.querySelectorAll('.prompt-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.prompt-tab').forEach(t => t.classList.remove('on'));
+    tab.classList.add('on');
+    currentPrompt = tab.dataset.prompt;
+    document.getElementById('promptText').textContent = prompts[currentPrompt];
+    document.getElementById('copyBtn').textContent = '📋 複製';
+    document.getElementById('copyBtn').classList.remove('copied');
+  });
+});
+
+window.copyPrompt = function() {
+  const text = document.getElementById('promptText').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ 已複製';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 複製'; btn.classList.remove('copied'); }, 2000);
+  });
+};
+
+// ===== Init =====
+async function initSemantic() {
+  try {
+    extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    statusText.textContent = '語意搜尋就緒';
+    statusDot.className = 'status-dot ok';
+    modeToggle.textContent = '語意';
+    searchMode.style.display = 'inline';
+    searchMode.textContent = '🔬 語意搜尋';
+    loadOverlay.classList.remove('show');
+  } catch(e) {
+    console.error('Semantic model load failed:', e);
+    statusText.textContent = '僅模糊搜尋';
+    statusDot.className = 'status-dot warn';
+    modeToggle.textContent = '模糊';
+    modeToggle.classList.add('fuzzy');
+    useSemantic = false;
+    searchMode.style.display = 'inline';
+    searchMode.textContent = '🔤 模糊搜尋';
+    loadOverlay.classList.remove('show');
+  }
+}
+
+async function init() {
+  try {
+    // Load model data
+    const resp = await fetch('models.json');
+    modelData = await resp.json();
+    
+    // Handle both formats
+    let models = modelData.models || modelData;
+    if (!Array.isArray(models)) models = [];
+    
+    // Build search text for Fuse.js
+    models.forEach(m => {
+      m._searchText = [m.id, m.pz, m.p, m.sz, (m.t||[]).join(' '), m.kw, m.lib, m.lic, m.pm].join(' ');
+    });
+    
+    // If in new format, keep embeddings
+    if (modelData.embeddings?.length) {
+      modelData.models = models;
+    } else {
+      modelData = { models, embeddings: [], version: 'v0.2', updated: '', count: models.length };
+    }
+    
+    // Setup Fuse.js
+    fuse = new Fuse(models, {
+      keys: [
+        { name: '_searchText', weight: 1 },
+        { name: 'id', weight: 2 },
+        { name: 'pz', weight: 1.5 },
+      ],
+      threshold: 0.45, distance: 100, includeScore: true,
+      minMatchCharLength: 1, useExtendedSearch: true,
+    });
+    
+    // Update UI
+    versionTag.textContent = modelData.version || 'v0.3';
+    modelCount.textContent = `${modelData.count || models.length} 個模型`;
+    footerCount.textContent = `${modelData.count || models.length} 個模型 · 36 種 HF 分類`;
+    if (modelData.updated) lastUpdate.textContent = modelData.updated.slice(0,10);
+    
+    statusText.textContent = modelData.embeddings?.length ? '載入 embedding...' : '載入完成';
+    statusDot.className = 'status-dot ok';
+    
+    console.log(`Loaded ${models.length} models, embeddings: ${modelData.embeddings?.length || 0}`);
+    
+    // Init semantic search
+    if (modelData.embeddings?.length) {
+      initSemantic();
+    } else {
+      statusText.textContent = '僅模糊搜尋（無 embedding）';
+      modeToggle.textContent = '模糊';
+      modeToggle.classList.add('fuzzy');
+      useSemantic = false;
+      searchMode.style.display = 'inline';
+      searchMode.textContent = '🔤 模糊搜尋';
+    }
+    
+    searchInput.focus();
+  } catch(e) {
+    console.error('Init error:', e);
+    statusText.textContent = '載入失敗: ' + e.message;
+    statusDot.className = 'status-dot warn';
+  }
+}
+
+init();
 </script>
 
 </body>
